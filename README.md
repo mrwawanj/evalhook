@@ -1,5 +1,5 @@
 # evalhook
-Stefan Esser
+Stefan Esse
 
 # How to install
 ## On Debian/Ubuntu
