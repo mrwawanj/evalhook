@@ -1,0 +1,104 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Xpanel extends CI_Controller {
+
+
+	public function __construct()
+    {
+        parent::__construct();
+        $this->load->library(array('form_validation'));
+        $this->load->model(array('model_login'));
+    }
+
+	public function index()
+	{
+		$this->init_login();
+	}
+
+	private function init_login()
+	{
+		if ($this->model_hook->sudah_login_apa_belum()==true) 
+		{
+			redirect('administrator');
+		}
+		else
+		{
+			$this->load->view('login/login');
+		}
+		
+	}
+
+	public function cek_login()
+	{
+		$this->init_cek_login();
+	}
+
+	private function init_cek_login()
+	{
+		if(isset($_POST['submit']))
+	    {
+	      $username = $this->format_data->string($this->input->post('username',TRUE));
+	      $password = $this->format_data->string($this->input->post('password',TRUE));
+
+
+	      $this->session->set_flashdata('username', $username);
+	      $this->session->set_flashdata('password', $password);
+
+
+	      if(empty($username) === TRUE || empty($password) === TRUE)
+	      {
+	        $status_property['parameter'] = 'pesan';
+	        $status_property['message'] = 'but we need your <i>Username</i> and <i>Password</i>.';
+	        $status_property['error_message'] = 'alert-danger';
+	        $status_property['status_message'] = 'cek_login';
+	        $status_property['url_process'] = ''; 
+	        $status_property['error_icon'] = 'fa fa-times';
+	        $status_property['error_type'] = 'Err.';  
+	        $this->model_public->message_status($status_property); 
+	        redirect(site_url('xpanel'));
+	      }
+	      	else if($this->model_login->init_user_exist($username,$password) === FALSE)
+	      {
+	        $status_property['parameter'] = 'pesan';
+	        $status_property['message'] = 'Your Account was wrong. Please try again.';
+	        $status_property['error_message'] = 'alert-danger';
+	        $status_property['status_message'] = 'cek_login';
+	        $status_property['url_process'] = ''; 
+	        $status_property['error_icon'] = 'fa fa-times';
+	        $status_property['error_type'] = 'Err.';  
+	        $this->model_public->message_status($status_property); 
+	        redirect(base_url('xpanel'));
+	      }
+	      else
+	      {
+	        $cek_akun = $this->model_login->init_user_lock($username, $password);
+	        if($cek_akun == FALSE)
+	        {
+	          $status_property['parameter'] = 'pesan';
+	          $status_property['message'] = 'your account is locked. Please contact Administrator.';
+	          $status_property['error_message'] = 'alert-danger';
+	          $status_property['status_message'] = 'validation';
+	          $status_property['url_process'] = ''; 
+	          $status_property['error_icon'] = 'fa fa-times';
+	          $status_property['error_type'] = 'Err.';  
+	          $this->model_public->message_status($status_property); 
+	          redirect(base_url('xpanel'));
+	        } 
+	        else
+	        {
+	          $view_login = $this->model_login->init_user_login($username, $password);
+	          if($view_login == TRUE)
+	          {
+	           	redirect('administrator');
+	          } 
+	        } 
+	      } 
+	    } 
+	    else 
+	    	{
+	    		redirect(base_url('xpanel'));
+	    	}
+	}
+
+}
